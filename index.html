@@ -91,11 +91,11 @@
     <div><span>Grandmaster → Epic</span><b>₱25 / star</b></div>
     <div><span>Epic → Legend</span><b>₱30 / star</b></div>
     <div><span>Legend → Mythic</span><b>₱40 / star</b></div>
-    <div><span>Mythic → Mythical Honor</span><b>₱60 / star</b></div>
-    <div><span>Mythical Honor → Mythical Glory</span><b>₱70 / star</b></div>
-    <div><span>Mythical Glory → Mythical Immortal</span><b>₱80 / star</b></div>
-    <div><span>Mythical Immortal+</span><b>₱100 / star</b></div>
-    <div><span>Spam Hero</span><b>+₱30 / star</b></div>
+    <div><span>Mythic → Mythical Honor</span><b>₱50 / star</b></div>
+    <div><span>Mythical Honor → Mythical Glory</span><b>₱60 / star</b></div>
+    <div><span>Mythical Glory → Mythical Immortal</span><b>₱70 / star</b></div>
+    <div><span>Mythical Immortal+</span><b>₱80 / star</b></div>
+    <div><span>Spam Hero</span><b>FREE</b></div>
     <div><span>Spam Role</span><b>FREE</b></div>
   </div>
   <div class="calc-wrap">
@@ -118,10 +118,10 @@
 
       <div class="hero-picker">
         <div class="picker-head">
-          <div><span>SPAM HERO</span><b>+₱30 / star</b></div>
+          <div><span>SPAM HERO</span><b>FREE</b></div>
           <small id="heroCount">0 selected</small>
         </div>
-        <p class="picker-note">Select one or more heroes to spam. Multiple heroes still cost only +₱30/star.</p>
+        <p class="picker-note">Select one or more heroes to spam — FREE, with no additional fee.</p>
         <input id="heroSearch" class="hero-search" type="search" placeholder="Search heroes...">
         <div id="heroGroups" class="hero-groups"></div>
       </div>
@@ -166,7 +166,7 @@
       <div id="price">₱0</div>
       <p id="summaryText">Select a current and target rank.</p>
       <div class="line"><span>Rank package</span><b id="pkg">₱0</b></div>
-      <div class="line"><span>Spam Hero fee</span><b id="starFee">₱0</b></div>
+      <div class="line"><span>Spam Hero fee</span><b id="starFee">FREE</b></div>
       <div class="line total"><span>Estimated total</span><b id="total">₱0</b></div>
       <div class="secure">🔒 <span>Your order details stay in this browser until you send them.</span></div>
     </aside>
@@ -386,12 +386,12 @@ const RANKS=[
  {name:"Grandmaster",price:25,divisions:["V","IV","III","II","I"],starsPerDivision:5},
  {name:"Epic",price:30,divisions:["V","IV","III","II","I"],starsPerDivision:5},
  {name:"Legend",price:40,divisions:["V","IV","III","II","I"],starsPerDivision:5},
- {name:"Mythic",price:60,starsPerDivision:null,minStars:0,maxStars:24},
- {name:"Mythical Honor",price:70,starsPerDivision:null,minStars:25,maxStars:49},
- {name:"Mythical Glory",price:80,starsPerDivision:null,minStars:50,maxStars:99},
- {name:"Mythical Immortal",price:100,starsPerDivision:null,minStars:100,maxStars:null}
+ {name:"Mythic",price:50,starsPerDivision:null,minStars:0,maxStars:24},
+ {name:"Mythical Honor",price:60,starsPerDivision:null,minStars:25,maxStars:49},
+ {name:"Mythical Glory",price:70,starsPerDivision:null,minStars:50,maxStars:99},
+ {name:"Mythical Immortal",price:80,starsPerDivision:null,minStars:100,maxStars:null}
 ];
-const SPAM_HERO_FEE=30;
+const SPAM_HERO_FEE=0;
 const SPAM_ROLE_FEE=0;
 const HERO_ROLES={
  "Tank (including Tank hybrids)":["Akai","Alice","Atlas","Barats","Baxia","Belerick","Carmilla","Chip","Edith","Esmeralda","Franco","Fredrinn","Gatotkaca","Gloo","Grock","Hilda","Hylos","Johnson","Khufra","Lolita","Masha","Minotaur","Tigreal","Uranus"],
@@ -469,7 +469,7 @@ function calc(){
  const selectedHeroes=window.getSelectedHeroes?window.getSelectedHeroes():[];
  const stars=Math.max(0,result.totalStars);
  if(result.sameRank && stars===0){
-  $("pkg").textContent=money(0);$("starFee").textContent=money(0);$("total").textContent=money(0);$("price").textContent=money(0);$("summaryText").textContent="Choose a higher target or add target stars.";return;
+  $("pkg").textContent=money(0);$("starFee").textContent="FREE";$("total").textContent=money(0);$("price").textContent=money(0);$("summaryText").textContent="Choose a higher target or add target stars.";return;
  }
  let rankCost=0;
  if(result.a<result.b){
@@ -483,8 +483,8 @@ function calc(){
  } else {
   rankCost=stars*result.from.price;
  }
- const spamFee=selectedHeroes.length?SPAM_HERO_FEE*stars:0,total=rankCost+spamFee;
- $("pkg").textContent=money(rankCost);$("starFee").textContent=money(spamFee);$("total").textContent=money(total);$("price").textContent=money(total);
+ const spamFee=0,total=rankCost;
+ $("pkg").textContent=money(rankCost);$("starFee").textContent="FREE";$("total").textContent=money(total);$("price").textContent=money(total);
  const targetLabel=result.to.starsPerDivision===null?`${result.to.name} ${+$("targetStars").value||0}★`:`${result.to.name} ${$("toDivision").value} (${+$("targetStars").value||0}★)`;
  $("summaryText").textContent=`${result.from.name} ${$("fromDivision").value} (${+$("stars").value||0}★) → ${targetLabel} • ${stars} stars to push${selectedHeroes.length?` • ${selectedHeroes.length} spam hero${selectedHeroes.length>1?"es":""}`:""}`;
 }
