@@ -232,6 +232,357 @@ select:focus,input:focus,textarea:focus{border-color:#ff4655}
 @media(max-width:1000px){.rank-cards{gap:14px}.rank-card{min-height:210px;padding:15px 9px 13px}.rank-emblem{height:86px;min-height:86px;flex-basis:86px}.rank-emblem img{width:80px;height:80px;max-width:80px;max-height:80px}}
 @media(max-width:650px){.rank-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.rank-card{min-height:194px;padding:13px 8px 12px}.rank-emblem{height:76px;min-height:76px;flex-basis:76px;margin-bottom:6px}.rank-emblem img{width:70px;height:70px;max-width:70px;max-height:70px}.rank-card>b{font-size:12px;min-height:34px;line-height:1.22}.rank-card>strong{font-size:21px;padding-top:10px}.rank-card>strong small{font-size:11px}}
 </style>
+
+<style id="seonatchi-rank-image-picker-css">
+/* Preserve the original order form layout; replace only the visible rank dropdown UI. */
+#orderForm label:has(> select#from),
+#orderForm label:has(> select#to){position:relative}
+#orderForm select#from,#orderForm select#to{
+  position:absolute!important;left:0!important;bottom:0!important;width:1px!important;height:1px!important;
+  opacity:0!important;pointer-events:none!important;clip-path:inset(50%)!important;overflow:hidden!important
+}
+.rank-image-trigger{
+  width:100%;min-height:56px;margin-top:8px;padding:9px 14px;display:flex;align-items:center;gap:13px;
+  border:1px solid #30384b;border-radius:13px;background:#0b0d14;color:#f5f5f7;text-align:left;
+  font:inherit;cursor:pointer;box-shadow:inset 0 0 0 1px #ffffff03;transition:border-color .18s,background .18s
+}
+.rank-image-trigger:focus-visible{outline:2px solid #fb7185;outline-offset:2px}
+.rank-image-trigger img{width:44px;height:44px;object-fit:contain;flex:0 0 44px}
+.rank-image-trigger .rank-image-trigger-name{flex:1;min-width:0;font-weight:800;font-size:16px}
+.rank-image-trigger .rank-image-trigger-arrow{color:#9ca3af;font-size:20px;line-height:1}
+.rank-image-picker-backdrop{position:fixed;inset:0;z-index:99999;display:none;align-items:flex-end;justify-content:center;
+  padding:0;background:rgba(0,0,0,.72);backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+.rank-image-picker-backdrop.open{display:flex}
+.rank-image-picker{width:min(100%,620px);max-height:min(84dvh,780px);display:flex;flex-direction:column;overflow:hidden;
+  border:1px solid #34415f;border-bottom:0;border-radius:25px 25px 0 0;background:#0b142b;color:#f6f7fb;
+  box-shadow:0 -12px 50px #0009;animation:rankImageSheetIn .2s ease-out}
+.rank-image-picker-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:21px 22px 17px;
+  border-bottom:1px solid #273451;flex-shrink:0}
+.rank-image-picker-head h3{margin:0;font-size:21px;line-height:1.2;color:#f7f8ff}
+.rank-image-picker-close{width:38px;height:38px;border:0;background:transparent;color:#f5f6fb;font-size:30px;line-height:1;cursor:pointer}
+.rank-image-picker-list{overflow-y:auto;overscroll-behavior:contain;padding:7px 0 max(12px,env(safe-area-inset-bottom))}
+.rank-image-option{width:100%;min-height:76px;padding:10px 18px;display:flex;align-items:center;gap:15px;border:0;
+  border-bottom:1px solid #1b2944;background:transparent;color:#f4f6ff;text-align:left;font:inherit;cursor:pointer}
+.rank-image-option img{width:53px;height:53px;object-fit:contain;flex:0 0 53px}
+.rank-image-option .rank-image-option-name{flex:1;font-size:17px;font-weight:700}
+.rank-image-option .rank-image-option-check{width:29px;height:29px;display:grid;place-items:center;border:3px solid #647ba7;
+  border-radius:50%;color:transparent;font-size:16px;font-weight:900}
+.rank-image-option.selected{background:#142449}
+.rank-image-option.selected .rank-image-option-check{background:#b9ceff;border-color:#b9ceff;color:#0a1530}
+.rank-image-option:disabled{opacity:.38;cursor:not-allowed}
+.rank-image-option:disabled .rank-image-option-name:after{content:"Not above your current rank";display:block;margin-top:4px;color:#8290ad;font-size:12px;font-weight:500}
+.rank-image-option.immortal-option img{animation:seonatchiImmortalBlink 1.7s ease-in-out infinite;filter:drop-shadow(0 0 5px #f7d36d) drop-shadow(0 0 8px #a855f7)}
+.rank-image-option.immortal-option.selected{box-shadow:inset 0 0 0 1px #e7bd62,0 0 16px #9d5cff35}
+.rank-image-option.immortal-option.selected .rank-image-option-check{box-shadow:0 0 13px #e8c66c}
+@keyframes rankImageSheetIn{from{transform:translateY(25px);opacity:.5}to{transform:translateY(0);opacity:1}}
+@keyframes seonatchiImmortalBlink{0%,100%{filter:drop-shadow(0 0 4px #f5cf63) drop-shadow(0 0 6px #9f5cff);transform:scale(1)}
+50%{filter:drop-shadow(0 0 11px #ffe68b) drop-shadow(0 0 15px #bf75ff) drop-shadow(0 0 18px #65baff);transform:scale(1.06)}}
+@media(min-width:700px){.rank-image-picker-backdrop{align-items:center;padding:20px}.rank-image-picker{border-bottom:1px solid #34415f;border-radius:25px;max-height:80vh}}
+@media(prefers-reduced-motion:reduce){.rank-image-picker,.rank-image-option.immortal-option img{animation:none!important}}
+</style>
+
+
+<style id="seonatchi-rank-progression-css">
+.seonatchi-rank-progression{position:relative;isolation:isolate;overflow:hidden;margin:18px 0 25px;padding:25px 18px 27px;border:1px solid #273b65;border-radius:25px;background:radial-gradient(ellipse at 50% 45%,#172440 0%,#0e172b 65%,#0b1222 100%);box-shadow:inset 0 0 35px #6d8de50a}
+.seonatchi-rank-progression:before{content:"";position:absolute;z-index:-1;left:6%;right:6%;top:53%;height:2px;background:linear-gradient(90deg,#8fb7ff66,#53698d 65%,#e8ce8b99);box-shadow:0 0 8px #8db4ff22}
+.seonatchi-rank-progression-heading{display:flex;align-items:baseline;justify-content:space-between;gap:10px;margin:0 0 19px}
+.seonatchi-rank-progression-heading h3{margin:0;color:#f5f7ff;font-size:clamp(20px,3vw,31px);font-weight:750;letter-spacing:-.035em}
+.seonatchi-rank-progression-heading span{color:#a1abc2;font-size:clamp(9px,1.4vw,13px);text-align:right}
+.seonatchi-rank-progression-track{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;align-items:start}
+.seonatchi-progression-stage{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;gap:10px;min-width:0;padding:4px 0 7px;border:0;background:transparent;color:#c7d0e4;font:inherit;cursor:pointer;transition:transform .18s ease,color .18s ease}
+.seonatchi-progression-orb{width:clamp(40px,7.8vw,76px);height:clamp(40px,7.8vw,76px);display:grid;place-items:center;box-sizing:border-box;border:2px solid #34476d;border-radius:50%;background:radial-gradient(circle at 50% 40%,#1a2945,#091225 72%);transition:border-color .2s,box-shadow .2s,transform .2s,background .2s}
+.seonatchi-progression-orb img{width:85%;height:85%;object-fit:contain;filter:grayscale(.55);opacity:.78;transition:filter .2s,opacity .2s}
+.seonatchi-progression-stage-label{font-size:clamp(9px,1.65vw,15px);font-weight:850;line-height:1.1;text-align:center;white-space:nowrap}
+.seonatchi-progression-stage.current .seonatchi-progression-orb{border:3px solid #91b9ff;background:radial-gradient(circle,#284574,#0c1830 75%);box-shadow:0 0 0 5px #76a7ff1f,0 0 23px #6495ff85}
+.seonatchi-progression-stage.current .seonatchi-progression-orb img,.seonatchi-progression-stage.target .seonatchi-progression-orb img{filter:none;opacity:1}
+.seonatchi-progression-stage.current .seonatchi-progression-stage-label,.seonatchi-progression-stage.target .seonatchi-progression-stage-label{color:#f5f7ff}
+.seonatchi-progression-stage.target .seonatchi-progression-orb{border:3px solid #d9c17d;background:radial-gradient(circle,#66552e,#17172a 75%);box-shadow:0 0 0 5px #d9c17d24,0 0 25px #e8c76b80}
+.seonatchi-progression-stage:disabled{cursor:default;opacity:.36}
+.seonatchi-progression-stage:focus-visible{outline:2px solid #a6c4ff;outline-offset:4px;border-radius:14px}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb{background:radial-gradient(circle,#5b4a2a 0%,#1b1a2b 72%);border-color:#bca363;animation:seonatchiImmortalProgressGlow 2s ease-in-out infinite}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb img{filter:drop-shadow(0 0 4px #f5d16b) drop-shadow(0 0 7px #b36cff);opacity:1}
+.seonatchi-progression-stage.immortal.target .seonatchi-progression-orb{border-color:#f3d98b;animation:seonatchiImmortalProgressGlowStrong 1.3s ease-in-out infinite}
+@keyframes seonatchiImmortalProgressGlow{0%,100%{box-shadow:0 0 8px #e8c96c66,0 0 0 3px #a56bff16}50%{box-shadow:0 0 23px #e8c96cbb,0 0 0 7px #a56bff40}}
+@keyframes seonatchiImmortalProgressGlowStrong{0%,100%{box-shadow:0 0 12px #e8c96c99,0 0 0 4px #a56bff22}50%{box-shadow:0 0 32px #ffe89b,0 0 0 9px #a56bff55}}
+@media(max-width:480px){.seonatchi-rank-progression{padding:19px 9px 20px;border-radius:20px}.seonatchi-rank-progression-heading{align-items:flex-start;flex-direction:column;gap:5px;margin-bottom:15px}.seonatchi-rank-progression-heading h3{font-size:22px}.seonatchi-rank-progression-heading span{font-size:10px;text-align:left}.seonatchi-rank-progression-track{gap:0}.seonatchi-progression-stage{gap:8px}.seonatchi-progression-orb{width:clamp(34px,11vw,48px);height:clamp(34px,11vw,48px)}.seonatchi-progression-stage-label{font-size:9px;letter-spacing:-.03em}}
+@media(prefers-reduced-motion:reduce){.seonatchi-progression-stage.immortal .seonatchi-progression-orb{animation:none!important}}
+</style>
+
+
+<style id="seonatchi-all-ranks-progress-fix">
+.seonatchi-rank-progression-track{grid-template-columns:repeat(10,minmax(0,1fr))!important;gap:2px!important}
+.seonatchi-progression-stage{min-width:0!important;padding-left:0!important;padding-right:0!important}
+.seonatchi-progression-orb{width:clamp(25px,5.5vw,62px)!important;height:clamp(25px,5.5vw,62px)!important}
+.seonatchi-progression-orb img{width:82%!important;height:82%!important;object-fit:contain!important}
+.seonatchi-progression-stage-label{font-size:clamp(7px,1vw,12px)!important;line-height:1.05!important;letter-spacing:-.035em!important;white-space:normal!important;overflow-wrap:anywhere}
+@media(max-width:520px){
+ .seonatchi-rank-progression{padding-left:8px!important;padding-right:8px!important}
+ .seonatchi-rank-progression-track{gap:1px!important}
+ .seonatchi-progression-stage{gap:5px!important}
+ .seonatchi-progression-orb{width:clamp(23px,7vw,36px)!important;height:clamp(23px,7vw,36px)!important}
+ .seonatchi-progression-stage-label{font-size:7px!important;letter-spacing:-.04em!important}
+}
+</style>
+
+
+<style id="seonatchi-immortal-only-glow-and-image-size-fix">
+/* Keep every progression emblem at a consistent, compact size. */
+.seonatchi-progression-orb{
+  width:clamp(25px,5.5vw,48px)!important;
+  height:clamp(25px,5.5vw,48px)!important;
+  box-shadow:none!important;
+  background:transparent!important;
+  border-color:#34476d!important;
+}
+.seonatchi-progression-orb img{
+  width:82%!important;
+  height:82%!important;
+  object-fit:contain!important;
+  filter:none!important;
+  transform:none!important;
+  animation:none!important;
+}
+/* Current/target highlights remain static; no backlight pulse on other ranks. */
+.seonatchi-progression-stage.current .seonatchi-progression-orb,
+.seonatchi-progression-stage.target .seonatchi-progression-orb{
+  box-shadow:none!important;
+  transform:none!important;
+}
+/* Only Mythical Immortal receives the blinking gold/purple/blue backlight. */
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb{
+  border-color:#e7c66c!important;
+  background:radial-gradient(circle,#f6d77835 0%,#a855f722 48%,transparent 74%)!important;
+  animation:seonatchiImmortalOnlyBacklight 1.6s ease-in-out infinite!important;
+}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb img{
+  filter:drop-shadow(0 0 3px #f8d46b)!important;
+  animation:seonatchiImmortalOnlyEmblem 1.6s ease-in-out infinite!important;
+}
+@keyframes seonatchiImmortalOnlyBacklight{
+  0%,100%{box-shadow:0 0 5px #f5d36a44,0 0 0 2px #a855f718}
+  50%{box-shadow:0 0 18px #f5d36acc,0 0 23px #a855f788,0 0 30px #65baff55}
+}
+@keyframes seonatchiImmortalOnlyEmblem{
+  0%,100%{filter:drop-shadow(0 0 3px #f8d46b)}
+  50%{filter:drop-shadow(0 0 8px #f8d46b) drop-shadow(0 0 7px #b875ff) drop-shadow(0 0 5px #65baff)}
+}
+@media(max-width:520px){
+ .seonatchi-progression-orb{width:clamp(24px,6vw,34px)!important;height:clamp(24px,6vw,34px)!important}
+}
+@media(prefers-reduced-motion:reduce){
+ .seonatchi-progression-stage.immortal .seonatchi-progression-orb,
+ .seonatchi-progression-stage.immortal .seonatchi-progression-orb img{animation:none!important}
+}
+</style>
+
+
+<style id="seonatchi-rank-progression-larger">
+/* Make the progression panel and emblems easier to see without changing other sections. */
+.seonatchi-rank-progression{
+  padding:30px 24px 32px!important;
+  border-radius:28px!important;
+}
+.seonatchi-rank-progression-heading h3{
+  font-size:clamp(25px,3.2vw,38px)!important;
+  line-height:1.12!important;
+}
+.seonatchi-rank-progression-heading span{
+  font-size:clamp(13px,1.5vw,17px)!important;
+}
+.seonatchi-rank-progression-track{
+  margin-top:18px!important;
+  min-height:126px!important;
+  align-items:start!important;
+  gap:4px!important;
+}
+.seonatchi-progression-stage{
+  gap:9px!important;
+  min-width:0!important;
+}
+.seonatchi-progression-orb{
+  width:clamp(40px,6.2vw,66px)!important;
+  height:clamp(40px,6.2vw,66px)!important;
+  flex:0 0 auto!important;
+}
+.seonatchi-progression-orb img{
+  width:86%!important;
+  height:86%!important;
+}
+.seonatchi-progression-stage-label{
+  font-size:clamp(9px,1.1vw,13px)!important;
+  line-height:1.15!important;
+  letter-spacing:-.02em!important;
+  overflow-wrap:normal!important;
+}
+@media(max-width:520px){
+  .seonatchi-rank-progression{
+    padding:24px 12px 27px!important;
+  }
+  .seonatchi-rank-progression-heading h3{
+    font-size:25px!important;
+  }
+  .seonatchi-rank-progression-heading span{
+    font-size:13px!important;
+  }
+  .seonatchi-rank-progression-track{
+    margin-top:17px!important;
+    min-height:110px!important;
+    gap:2px!important;
+  }
+  .seonatchi-progression-stage{
+    gap:8px!important;
+  }
+  .seonatchi-progression-orb{
+    width:clamp(36px,8.4vw,48px)!important;
+    height:clamp(36px,8.4vw,48px)!important;
+  }
+  .seonatchi-progression-stage-label{
+    font-size:clamp(8px,2vw,10px)!important;
+    line-height:1.1!important;
+    letter-spacing:-.025em!important;
+  }
+}
+</style>
+
+
+<style id="seonatchi-emblems-only-size-fix">
+/* Keep the progression container at its previous size; enlarge only the rank emblem orbs. */
+.seonatchi-rank-progression{
+  padding:20px 12px 22px!important;
+}
+.seonatchi-rank-progression-heading h3{
+  font-size:clamp(22px,2.7vw,30px)!important;
+}
+.seonatchi-rank-progression-heading span{
+  font-size:clamp(12px,1.25vw,15px)!important;
+}
+.seonatchi-rank-progression-track{
+  min-height:100px!important;
+  margin-top:13px!important;
+  gap:2px!important;
+}
+.seonatchi-progression-stage{
+  gap:7px!important;
+}
+.seonatchi-progression-orb{
+  width:clamp(34px,7vw,58px)!important;
+  height:clamp(34px,7vw,58px)!important;
+}
+.seonatchi-progression-orb img{
+  width:88%!important;
+  height:88%!important;
+  object-fit:contain!important;
+}
+/* Mobile: make the emblems noticeably bigger while keeping all 10 ranks in one row. */
+@media(max-width:520px){
+  .seonatchi-rank-progression{
+    padding:20px 8px 20px!important;
+  }
+  .seonatchi-rank-progression-heading h3{
+    font-size:22px!important;
+  }
+  .seonatchi-rank-progression-track{
+    min-height:92px!important;
+    margin-top:14px!important;
+    gap:1px!important;
+  }
+  .seonatchi-progression-stage{
+    gap:6px!important;
+  }
+  .seonatchi-progression-orb{
+    width:clamp(31px,8.7vw,43px)!important;
+    height:clamp(31px,8.7vw,43px)!important;
+  }
+  .seonatchi-progression-stage-label{
+    font-size:clamp(7px,1.8vw,9px)!important;
+    line-height:1.05!important;
+  }
+}
+</style>
+
+
+<style id="seonatchi-selected-rank-indicator">
+/* The current and target ranks should be obvious in the progression row. */
+.seonatchi-progression-stage{
+  position:relative!important;
+  border-radius:12px!important;
+  transition:color .2s ease,transform .2s ease!important;
+}
+.seonatchi-progression-orb{
+  position:relative!important;
+  border:2px solid #34476d!important;
+  transition:box-shadow .22s ease,border-color .22s ease,background .22s ease,transform .22s ease!important;
+}
+.seonatchi-progression-stage.current .seonatchi-progression-orb{
+  border-color:#8bb8ff!important;
+  background:radial-gradient(circle,#73a9ff38 0%,#17284b 68%,#0b1429 100%)!important;
+  box-shadow:0 0 0 3px #76aaff30,0 0 16px #64a0ffb0!important;
+  transform:scale(1.06)!important;
+}
+.seonatchi-progression-stage.current .seonatchi-progression-stage-label{
+  color:#c8ddff!important;
+  text-shadow:0 0 8px #6da6ff7a!important;
+}
+.seonatchi-progression-stage.target .seonatchi-progression-orb{
+  border-color:#ff5c77!important;
+  background:radial-gradient(circle,#ff466a40 0%,#3a172b 65%,#0b1429 100%)!important;
+  box-shadow:0 0 0 3px #ff496b30,0 0 17px #ff496bb5!important;
+  transform:scale(1.06)!important;
+}
+.seonatchi-progression-stage.target .seonatchi-progression-stage-label{
+  color:#ffb4c0!important;
+  text-shadow:0 0 8px #ff496b80!important;
+}
+.seonatchi-progression-stage.current.target .seonatchi-progression-orb{
+  border-color:#b8d1ff!important;
+  background:radial-gradient(circle,#8bb7ff60 0%,#49375c 60%,#0b1429 100%)!important;
+  box-shadow:0 0 0 4px #8bb7ff30,0 0 20px #8bb7ffb8,0 0 24px #ff537b70!important;
+}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb{
+  animation:seonatchiImmortalOnlyBacklight 1.6s ease-in-out infinite!important;
+}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb img{
+  animation:seonatchiImmortalOnlyEmblem 1.6s ease-in-out infinite!important;
+}
+/* A selected rank stays visibly selected while preserving the Immortal-only animated backlight. */
+.seonatchi-progression-stage.immortal.current .seonatchi-progression-orb,
+.seonatchi-progression-stage.immortal.target .seonatchi-progression-orb{
+  border-color:#ffe7a0!important;
+}
+@media(prefers-reduced-motion:reduce){
+  .seonatchi-progression-stage.current .seonatchi-progression-orb,
+  .seonatchi-progression-stage.target .seonatchi-progression-orb{transform:none!important}
+}
+</style>
+
+
+<style id="seonatchi-immortal-glow-only-when-selected">
+/* Immortal is static when it is not selected. */
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb,
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb img{
+  animation:none!important;
+}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb{
+  border-color:#34476d!important;
+  background:transparent!important;
+  box-shadow:none!important;
+}
+.seonatchi-progression-stage.immortal .seonatchi-progression-orb img{
+  filter:none!important;
+}
+/* Blink only when Mythical Immortal is selected as current or target rank. */
+.seonatchi-progression-stage.immortal.current .seonatchi-progression-orb,
+.seonatchi-progression-stage.immortal.target .seonatchi-progression-orb{
+  border-color:#ffe7a0!important;
+  background:radial-gradient(circle,#f6d77842 0%,#a855f729 48%,transparent 74%)!important;
+  animation:seonatchiImmortalOnlyBacklight 1.6s ease-in-out infinite!important;
+}
+.seonatchi-progression-stage.immortal.current .seonatchi-progression-orb img,
+.seonatchi-progression-stage.immortal.target .seonatchi-progression-orb img{
+  animation:seonatchiImmortalOnlyEmblem 1.6s ease-in-out infinite!important;
+}
+</style>
+
 </head>
 <body>
 <div class="noise"></div>
@@ -294,6 +645,13 @@ select:focus,input:focus,textarea:focus{border-color:#ff4655}
 <div class="calc-wrap">
 <form class="calc" id="orderForm">
 <div class="progress"><span class="active">01</span><i></i><span>02</span><i></i><span>03</span></div>
+<div class="seonatchi-rank-progression" id="seonatchiRankProgression">
+  <div class="seonatchi-rank-progression-heading">
+    <h3>Rank progression</h3>
+    <span>Choose where you are going</span>
+  </div>
+  <div class="seonatchi-rank-progression-track" id="seonatchiRankProgressionTrack" aria-label="Rank progression"></div>
+</div>
 <div class="two">
 <label>Current Rank<select id="from"></select></label>
 <label>Current Division<select id="fromDivision"></select></label>
@@ -787,5 +1145,166 @@ try{initRankControls();}catch(e){console.error('Rank fallback error:',e);}
 try{calc();}catch(e){console.error('Calculator error:',e);}
 
 </script>
+
+<script id="seonatchi-rank-image-picker">
+(function(){
+  const rankNames=["Warrior","Elite","Master","Grandmaster","Epic","Legend","Mythic","Mythical Honor","Mythical Glory","Mythical Immortal"];
+  const $=id=>document.getElementById(id);
+  let activeSelect=null, activeTrigger=null, backdrop=null, list=null, heading=null;
+  function cleanText(el){return (el?.innerText||el?.textContent||"").replace(/\s+/g," ").trim();}
+  function emblemFor(name){
+    // Match the exact accessible alt label on the original website's rank-pricing card.
+    // Do not use includes(name): "Mythic" can incorrectly match Honor/Glory/Immortal.
+    const expectedAlt = name + " rank emblem";
+    const images = [...document.querySelectorAll(".rank-card .rank-emblem img[alt]")];
+    const exact = images.find(img => (img.getAttribute("alt") || "").trim() === expectedAlt);
+    if (exact) return exact.currentSrc || exact.src || "";
+    // Existing card labels use "Mythical Immortal rank emblem" and "Mythic rank emblem";
+    // keep these exact fallbacks for the rank names in the calculator.
+    const altFallback = {
+      "Mythical Immortal": "Mythical Immortal rank emblem",
+      "Mythical Honor": "Mythical Honor rank emblem",
+      "Mythical Glory": "Mythical Glory rank emblem"
+    };
+    const fallbackAlt = altFallback[name];
+    const fallback = fallbackAlt && images.find(img => (img.getAttribute("alt") || "").trim() === fallbackAlt);
+    return fallback ? (fallback.currentSrc || fallback.src || "") : "";
+  }
+  function rankData(){
+    const data=Array.isArray(window.RANKS)?window.RANKS:rankNames.map((name,i)=>({name,price:0}));
+    return data.map((r,i)=>({name:r.name||rankNames[i],index:i,price:r.price||0,image:emblemFor(r.name||rankNames[i])}));
+  }
+  function ensureModal(){
+    if(backdrop)return;
+    backdrop=document.createElement("div");
+    backdrop.className="rank-image-picker-backdrop";
+    backdrop.innerHTML='<section class="rank-image-picker" role="dialog" aria-modal="true" aria-labelledby="rankImagePickerHeading"><header class="rank-image-picker-head"><h3 id="rankImagePickerHeading">Choose rank</h3><button class="rank-image-picker-close" type="button" aria-label="Close rank picker">×</button></header><div class="rank-image-picker-list"></div></section>';
+    document.body.appendChild(backdrop);
+    list=backdrop.querySelector(".rank-image-picker-list");
+    heading=backdrop.querySelector("h3");
+    backdrop.querySelector(".rank-image-picker-close").addEventListener("click",closeModal);
+    backdrop.addEventListener("click",e=>{if(e.target===backdrop)closeModal();});
+    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&backdrop.classList.contains("open"))closeModal();});
+  }
+  function updateTrigger(select,trigger){
+    const data=rankData()[Number(select.value)||0]||rankData()[0];
+    const img=trigger.querySelector("img");
+    if(data.image){img.src=data.image;img.style.display="";}
+    else {img.removeAttribute("src");img.style.display="none";}
+    img.alt=data.name+" rank emblem";
+    trigger.querySelector(".rank-image-trigger-name").textContent=data.name;
+  }
+  function openModal(select,trigger){
+    ensureModal();activeSelect=select;activeTrigger=trigger;
+    const isTarget=select.id==="to";
+    heading.textContent=isTarget?"Target rank":"Current rank";
+    const currentIndex=Number($("from")?.value||0);
+    const selectedIndex=Number(select.value||0);
+    list.innerHTML="";
+    rankData().forEach(rank=>{
+      const button=document.createElement("button");
+      button.type="button";
+      button.className="rank-image-option"+(rank.index===selectedIndex?" selected":"")+(rank.name==="Mythical Immortal"?" immortal-option":"");
+      const img=document.createElement("img");
+      if(rank.image)img.src=rank.image;
+      img.alt=rank.name+" emblem";
+      img.loading="lazy";
+      const name=document.createElement("span");name.className="rank-image-option-name";name.textContent=rank.name;
+      const check=document.createElement("span");check.className="rank-image-option-check";check.textContent="✓";check.setAttribute("aria-hidden","true");
+      button.append(img,name,check);
+      if(isTarget && rank.index<currentIndex){
+        button.disabled=true;
+      }
+      button.addEventListener("click",()=>{
+        if(button.disabled)return;
+        select.value=String(rank.index);
+        select.dispatchEvent(new Event("change",{bubbles:true}));
+        updateTrigger(select,trigger);
+        closeModal();
+      });
+      list.appendChild(button);
+    });
+    backdrop.classList.add("open");
+    document.body.style.overflow="hidden";
+    const selected=list.querySelector(".selected");
+    if(selected)selected.scrollIntoView({block:"nearest"});
+  }
+  function closeModal(){
+    if(!backdrop)return;
+    backdrop.classList.remove("open");
+    document.body.style.overflow="";
+    if(activeTrigger)activeTrigger.focus({preventScroll:true});
+    activeSelect=null;activeTrigger=null;
+  }
+  function setupProgression(){
+    const track=$("seonatchiRankProgressionTrack"), from=$("from"), to=$("to");
+    if(!track||!from||!to)return;
+    const stages=[
+      {label:"Warrior",name:"Warrior",index:0},
+      {label:"Elite",name:"Elite",index:1},
+      {label:"Master",name:"Master",index:2},
+      {label:"GM",name:"Grandmaster",index:3},
+      {label:"Epic",name:"Epic",index:4},
+      {label:"Legend",name:"Legend",index:5},
+      {label:"Mythic",name:"Mythic",index:6},
+      {label:"Honor",name:"Mythical Honor",index:7},
+      {label:"Glory",name:"Mythical Glory",index:8},
+      {label:"Immortal",name:"Mythical Immortal",index:9}
+    ];
+    function refresh(){
+      const current=Math.max(0,Number(from.value)||0);
+      const target=Math.max(0,Number(to.value)||0);
+      track.innerHTML=stages.map(stage=>{
+        const image=emblemFor(stage.name);
+        const currentClass=stage.index===current?" current":"";
+        const targetClass=stage.index===target?" target":"";
+        const immortalClass=stage.index===9?" immortal":"";
+        const disabled=stage.index<Number(from.value||0);
+        return `<button type="button" class="seonatchi-progression-stage${currentClass}${targetClass}${immortalClass}" data-progress-target="${stage.index}" aria-label="Set target rank to ${stage.name}" aria-pressed="${stage.index===target?"true":"false"}" ${disabled?"disabled":""}><span class="seonatchi-progression-orb"><img src="${image}" alt="${stage.name} emblem" loading="lazy"></span><span class="seonatchi-progression-stage-label">${stage.label}</span></button>`;
+      }).join("");
+    }
+    track.addEventListener("click",e=>{
+      const button=e.target.closest("[data-progress-target]");
+      if(!button||button.disabled)return;
+      to.value=button.dataset.progressTarget;
+      to.dispatchEvent(new Event("change",{bubbles:true}));
+      const targetTrigger=to.nextElementSibling;
+      if(targetTrigger?.classList.contains("rank-image-trigger"))updateTrigger(to,targetTrigger);
+      // The existing rank select change handlers update divisions, stars, and the price estimate.
+      refresh();
+    });
+    from.addEventListener("change",refresh);
+    to.addEventListener("change",refresh);
+    refresh();
+  }
+  function setup(){
+    ["from","to"].forEach(id=>{
+      const select=$(id);
+      if(!select||select.dataset.imagePickerReady==="1")return;
+      select.dataset.imagePickerReady="1";
+      const trigger=document.createElement("button");
+      trigger.type="button";
+      trigger.className="rank-image-trigger";
+      trigger.innerHTML='<img alt=""><span class="rank-image-trigger-name">Choose rank</span><span class="rank-image-trigger-arrow" aria-hidden="true">⌄</span>';
+      select.insertAdjacentElement("afterend",trigger);
+      trigger.addEventListener("click",()=>openModal(select,trigger));
+      select.addEventListener("change",()=>updateTrigger(select,trigger));
+      // Wait for the site's own rank-populating script to initialize select options.
+      const observer=new MutationObserver(()=>updateTrigger(select,trigger));
+      observer.observe(select,{childList:true});
+      updateTrigger(select,trigger);
+      setTimeout(()=>updateTrigger(select,trigger),0);
+      setTimeout(()=>updateTrigger(select,trigger),350);
+    });
+    const from=$("from"),to=$("to");
+    if(from)from.addEventListener("change",()=>{if(to&&backdrop?.classList.contains("open")&&activeSelect===to)openModal(to,activeTrigger);});
+    // Rank selects are populated by the site's original calculator after DOM ready.
+    setTimeout(()=>setupProgression(),150);
+  }
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",setup);
+  else setup();
+})();
+</script>
+
 </body>
 </html>
